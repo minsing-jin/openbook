@@ -1,0 +1,168 @@
+{
+  "stories": [
+    {
+      "id": "OB-001",
+      "title": "Bootstrap OpenBook workspace and shared domain model",
+      "priority": 1,
+      "acceptance_criteria": [
+        "Repository contains a pnpm workspace with web app, mobile shell, extension scaffold, and shared packages.",
+        "Shared types cover library items, document snapshots, import jobs, highlights, notes, and chat threads.",
+        "Seed data exists so the reader can be exercised before any import runs."
+      ],
+      "non_goals": [
+        "Cloud sync.",
+        "Production OCR tuning."
+      ],
+      "constraints": [
+        "Keep a web-first monorepo structure.",
+        "Use local-first state for the MVP shell."
+      ],
+      "dependencies": [
+        "None"
+      ],
+      "risks": [
+        "Future native parity may require diverging from the web shell.",
+        "Large local payloads can stress browser storage."
+      ],
+      "success_metrics": [
+        "Workspace installs cleanly with pnpm.",
+        "Web app can load seeded content without a backend database."
+      ],
+      "status": "done",
+      "mode": "basic",
+      "builder_commands": [
+        "test -f package.json",
+        "test -f apps/web/package.json",
+        "test -f packages/core/src/types.ts"
+      ],
+      "verifier_commands": [
+        "test -f apps/mobile/App.tsx",
+        "test -f apps/extension/manifest.json"
+      ]
+    },
+    {
+      "id": "OB-002",
+      "title": "Implement tablet-first web reader with local notes and sketches",
+      "priority": 1,
+      "acceptance_criteria": [
+        "The web app exposes a library route, reader route, and settings route.",
+        "Snapshot items render in a paginated reader with TOC navigation.",
+        "Text notes and sketch notes can be created and stored in local state."
+      ],
+      "non_goals": [
+        "Collaborative editing.",
+        "Rich text note formatting."
+      ],
+      "constraints": [
+        "Keep note and sketch state in the local OpenBook provider.",
+        "Sketch input must work with pointer events."
+      ],
+      "dependencies": [
+        "OB-001"
+      ],
+      "risks": [
+        "Selection anchoring can be brittle on complex imported markup.",
+        "Canvas persistence can grow quickly."
+      ],
+      "success_metrics": [
+        "Reader page renders seeded snapshot content.",
+        "Notes and sketches survive refresh via local storage."
+      ],
+      "status": "done",
+      "mode": "basic",
+      "builder_commands": [
+        "test -f apps/web/components/reader-workspace.tsx",
+        "test -f apps/web/components/notes-panel.tsx",
+        "test -f apps/web/components/sketch-canvas.tsx"
+      ],
+      "verifier_commands": [
+        "test -f apps/web/app/reader/[id]/page.tsx",
+        "test -f apps/web/app/settings/page.tsx"
+      ]
+    },
+    {
+      "id": "OB-003",
+      "title": "Implement URL and bundle imports plus book chat route",
+      "priority": 1,
+      "acceptance_criteria": [
+        "URL import can detect direct PDFs, attempt DOM extraction, and fall back to a shortcut item.",
+        "Authenticated capture bundles can be imported into a snapshot book.",
+        "Book chat route uses local retrieval and degrades gracefully without a configured API key."
+      ],
+      "non_goals": [
+        "Bypass protected content.",
+        "Real OCR execution in MVP."
+      ],
+      "constraints": [
+        "Import API stays inside the Next.js app for the current implementation.",
+        "AI route must work without requiring persistent backend storage."
+      ],
+      "dependencies": [
+        "OB-001"
+      ],
+      "risks": [
+        "Live site structures vary significantly.",
+        "OpenAI API responses can fail or change shape."
+      ],
+      "success_metrics": [
+        "Import route returns a valid import job payload.",
+        "Chat route always returns an assistant message."
+      ],
+      "status": "done",
+      "mode": "basic",
+      "builder_commands": [
+        "test -f apps/web/app/api/import/url/route.ts",
+        "test -f apps/web/app/api/import/bundle/route.ts",
+        "test -f apps/web/app/api/chat/book/route.ts"
+      ],
+      "verifier_commands": [
+        "test -f packages/import/src/index.ts",
+        "test -f packages/ai/src/index.ts"
+      ]
+    },
+    {
+      "id": "OB-004",
+      "title": "Verify the shipped OpenBook MVP and generate Ralph evidence",
+      "priority": 1,
+      "acceptance_criteria": [
+        "pnpm typecheck passes in the repository root.",
+        "pnpm build succeeds for the Next.js web app.",
+        "Ralph loop marks this story done and writes evidence artifacts."
+      ],
+      "non_goals": [
+        "Add new product features beyond the shipped MVP.",
+        "Introduce cloud deployment."
+      ],
+      "constraints": [
+        "Use the current repository state as the source of truth.",
+        "Do not require AGENTS.md to exist before the run."
+      ],
+      "dependencies": [
+        "OB-001",
+        "OB-002",
+        "OB-003"
+      ],
+      "risks": [
+        "Verification can fail if dependency or build state drifts.",
+        "Ralph loop may need retries if generated evidence commands fail."
+      ],
+      "success_metrics": [
+        "One Ralph loop run completes with OB-004 marked done.",
+        "Evidence files are created under stories/OB-004."
+      ],
+      "status": "done",
+      "mode": "basic",
+      "builder_commands": [
+        "pnpm install",
+        "pnpm typecheck"
+      ],
+      "verifier_commands": [
+        "pnpm build"
+      ],
+      "review_commands": [
+        "test -f README.md",
+        "test -f prd.md"
+      ]
+    }
+  ]
+}
