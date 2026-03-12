@@ -124,54 +124,47 @@ export function LibraryPage() {
       <div className="page-header">
         <div>
           <p className="eyebrow">Library</p>
-          <h2>Shape live reading sources into a calmer tablet shelf</h2>
+          <h2>Keep the books you can already read at the top</h2>
         </div>
         <button className="button button-ghost" type="button" onClick={resetDemo}>
           Reset demo data
         </button>
       </div>
 
-      <div className="library-dashboard-grid">
-        <article className="panel collection-panel">
-          <div className="panel-heading">
-            <div>
-              <p className="eyebrow">Collections</p>
-              <h3>Your shelf comes first</h3>
+      <article className="panel library-panel library-panel-priority">
+        <div className="panel-heading panel-heading-stack">
+          <div>
+            <p className="eyebrow">{activeTab === "books" ? "Books" : "Blogs"}</p>
+            <h3>{activeTab === "books" ? "Imported books and reader-ready sources" : "Saved blog captures"}</h3>
+          </div>
+          <div className="library-toolbar">
+            <div className="segmented-control">
+              <button
+                type="button"
+                className={activeTab === "books" ? "segment segment-active" : "segment"}
+                onClick={() => setActiveTab("books")}
+              >
+                Books
+              </button>
+              <button
+                type="button"
+                className={activeTab === "blogs" ? "segment segment-active" : "segment"}
+                onClick={() => setActiveTab("blogs")}
+              >
+                Blogs
+              </button>
             </div>
-            <p className="collection-meta">{activeTab === "books" ? `${bookCount} books` : `${blogCount} blogs`}</p>
+            <p className="collection-meta">{activeTab === "books" ? `${bookCount} books ready to open` : `${blogCount} blogs saved`}</p>
           </div>
-          <div className="segmented-control">
-            <button
-              type="button"
-              className={activeTab === "books" ? "segment segment-active" : "segment"}
-              onClick={() => setActiveTab("books")}
-            >
-              Books
-            </button>
-            <button
-              type="button"
-              className={activeTab === "blogs" ? "segment segment-active" : "segment"}
-              onClick={() => setActiveTab("blogs")}
-            >
-              Blogs
-            </button>
-          </div>
-          <div className="collection-summary-grid">
-            <article className="summary-card">
-              <strong>Books</strong>
-              <span>{bookCount}</span>
-            </article>
-            <article className="summary-card">
-              <strong>Blogs</strong>
-              <span>{blogCount}</span>
-            </article>
-            <article className="summary-card">
-              <strong>Ready</strong>
-              <span>{state.library.filter((item) => item.importStatus === "ready").length}</span>
-            </article>
-          </div>
-        </article>
+        </div>
+        <div className="library-grid">
+          {items.map((item) => (
+            <LibraryCard key={item.id} item={item} />
+          ))}
+        </div>
+      </article>
 
+      <div className="library-dashboard-grid">
         <article className="panel job-panel">
           <div className="panel-heading">
             <div>
@@ -186,116 +179,101 @@ export function LibraryPage() {
             ))}
           </div>
         </article>
+        <article className="panel import-selector-panel">
+          <div className="panel-heading">
+            <div>
+              <p className="eyebrow">Import sources</p>
+              <h3>Choose how to bring in the next book</h3>
+            </div>
+            <p className="collection-meta">Click a source to open its box</p>
+          </div>
+
+          <div className="import-source-switcher">
+            <button
+              type="button"
+              className={activeImportSource === "url" ? "source-trigger source-trigger-active" : "source-trigger"}
+              onClick={() => setActiveImportSource("url")}
+            >
+              <strong>URL capture</strong>
+              <span>Live book page</span>
+            </button>
+            <button
+              type="button"
+              className={activeImportSource === "bundle" ? "source-trigger source-trigger-active" : "source-trigger"}
+              onClick={() => setActiveImportSource("bundle")}
+            >
+              <strong>Auth bundle</strong>
+              <span>Extension JSON</span>
+            </button>
+            <button
+              type="button"
+              className={activeImportSource === "pdf" ? "source-trigger source-trigger-active" : "source-trigger"}
+              onClick={() => setActiveImportSource("pdf")}
+            >
+              <strong>PDF upload</strong>
+              <span>Local file</span>
+            </button>
+          </div>
+
+          <div className="import-drawer">
+            {activeImportSource === "url" ? (
+              <article className="import-drawer-card">
+                <h3>URL import task</h3>
+                <p>Paste a reading page and let OpenBook try PDF detection, DOM extraction, then fallback formatting.</p>
+                <div className="field-group">
+                  <label htmlFor="book-url">Book or reading page URL</label>
+                  <input
+                    id="book-url"
+                    className="text-input"
+                    value={url}
+                    onChange={(event) => setUrl(event.target.value)}
+                    placeholder="https://reader.example.com/chapter/1"
+                  />
+                </div>
+                <div className="card-actions">
+                  <button className="button button-primary" type="button" onClick={handleUrlImport} disabled={isSubmitting}>
+                    Start import
+                  </button>
+                </div>
+              </article>
+            ) : null}
+
+            {activeImportSource === "bundle" ? (
+              <article className="import-drawer-card">
+                <h3>Authenticated capture bundle</h3>
+                <p>Paste the JSON bundle emitted by the extension when the book is open in a logged-in browser tab.</p>
+                <div className="field-group">
+                  <label htmlFor="bundle-input">Extension bundle JSON</label>
+                  <textarea
+                    id="bundle-input"
+                    className="text-area"
+                    value={bundleText}
+                    onChange={(event) => setBundleText(event.target.value)}
+                    placeholder='{"url":"https://reader.example.com","title":"Captured chapter","html":"..."}'
+                  />
+                </div>
+                <div className="card-actions">
+                  <button className="button button-primary" type="button" onClick={handleBundleImport} disabled={isSubmitting}>
+                    Import bundle
+                  </button>
+                </div>
+              </article>
+            ) : null}
+
+            {activeImportSource === "pdf" ? (
+              <article className="import-drawer-card">
+                <h3>PDF import</h3>
+                <p>Upload a PDF to add an offline-first book entry to the shelf.</p>
+                <div className="field-group">
+                  <label htmlFor="pdf-file">Choose a PDF file</label>
+                  <input id="pdf-file" type="file" accept="application/pdf" onChange={handlePdfImport} />
+                </div>
+                <p className="fine-print">Large PDFs are stored in browser-local state for the current MVP shell.</p>
+              </article>
+            ) : null}
+          </div>
+        </article>
       </div>
-
-      <article className="panel import-selector-panel">
-        <div className="panel-heading">
-          <div>
-            <p className="eyebrow">Import sources</p>
-            <h3>Choose how to bring in the next book</h3>
-          </div>
-          <p className="collection-meta">Click a source to open its box</p>
-        </div>
-
-        <div className="import-source-switcher">
-          <button
-            type="button"
-            className={activeImportSource === "url" ? "source-trigger source-trigger-active" : "source-trigger"}
-            onClick={() => setActiveImportSource("url")}
-          >
-            <strong>URL capture</strong>
-            <span>Live book page</span>
-          </button>
-          <button
-            type="button"
-            className={activeImportSource === "bundle" ? "source-trigger source-trigger-active" : "source-trigger"}
-            onClick={() => setActiveImportSource("bundle")}
-          >
-            <strong>Auth bundle</strong>
-            <span>Extension JSON</span>
-          </button>
-          <button
-            type="button"
-            className={activeImportSource === "pdf" ? "source-trigger source-trigger-active" : "source-trigger"}
-            onClick={() => setActiveImportSource("pdf")}
-          >
-            <strong>PDF upload</strong>
-            <span>Local file</span>
-          </button>
-        </div>
-
-        <div className="import-drawer">
-          {activeImportSource === "url" ? (
-            <article className="import-drawer-card">
-              <h3>URL import task</h3>
-              <p>Paste a reading page and let OpenBook try PDF detection, DOM extraction, then fallback formatting.</p>
-              <div className="field-group">
-                <label htmlFor="book-url">Book or reading page URL</label>
-                <input
-                  id="book-url"
-                  className="text-input"
-                  value={url}
-                  onChange={(event) => setUrl(event.target.value)}
-                  placeholder="https://reader.example.com/chapter/1"
-                />
-              </div>
-              <div className="card-actions">
-                <button className="button button-primary" type="button" onClick={handleUrlImport} disabled={isSubmitting}>
-                  Start import
-                </button>
-              </div>
-            </article>
-          ) : null}
-
-          {activeImportSource === "bundle" ? (
-            <article className="import-drawer-card">
-              <h3>Authenticated capture bundle</h3>
-              <p>Paste the JSON bundle emitted by the extension when the book is open in a logged-in browser tab.</p>
-              <div className="field-group">
-                <label htmlFor="bundle-input">Extension bundle JSON</label>
-                <textarea
-                  id="bundle-input"
-                  className="text-area"
-                  value={bundleText}
-                  onChange={(event) => setBundleText(event.target.value)}
-                  placeholder='{"url":"https://reader.example.com","title":"Captured chapter","html":"..."}'
-                />
-              </div>
-              <div className="card-actions">
-                <button className="button button-primary" type="button" onClick={handleBundleImport} disabled={isSubmitting}>
-                  Import bundle
-                </button>
-              </div>
-            </article>
-          ) : null}
-
-          {activeImportSource === "pdf" ? (
-            <article className="import-drawer-card">
-              <h3>PDF import</h3>
-              <p>Upload a PDF to add an offline-first book entry to the shelf.</p>
-              <div className="field-group">
-                <label htmlFor="pdf-file">Choose a PDF file</label>
-                <input id="pdf-file" type="file" accept="application/pdf" onChange={handlePdfImport} />
-              </div>
-              <p className="fine-print">Large PDFs are stored in browser-local state for the current MVP shell.</p>
-            </article>
-          ) : null}
-        </div>
-      </article>
-
-      <article className="panel library-panel">
-        <div className="panel-heading">
-          <div>
-            <p className="eyebrow">{activeTab === "books" ? "Books" : "Blogs"}</p>
-            <h3>{activeTab === "books" ? "Imported books and reader-ready sources" : "Saved blog captures"}</h3>
-          </div>
-        </div>
-        <div className="library-grid">
-          {items.map((item) => (
-            <LibraryCard key={item.id} item={item} />
-          ))}
-        </div>
-      </article>
     </section>
   );
 }

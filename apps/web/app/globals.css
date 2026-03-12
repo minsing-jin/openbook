@@ -65,7 +65,7 @@ img {
   gap: 18px;
 }
 
-.brand-card,
+.brand-badge,
 .status-card,
 .panel,
 .tool-panel,
@@ -80,19 +80,18 @@ img {
   box-shadow: var(--shadow);
 }
 
-.brand-card,
+.brand-badge,
 .status-card {
   padding: 20px;
 }
 
-.brand-card h1,
 .page-header h2 {
   margin: 8px 0 10px;
   font-size: clamp(1.9rem, 2.1vw, 2.5rem);
   line-height: 1.05;
 }
 
-.brand-card p,
+.brand-badge p,
 .status-card p,
 .panel p,
 .tool-panel p {
@@ -151,7 +150,7 @@ img {
 }
 
 .library-dashboard-grid {
-  grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.95fr);
+  grid-template-columns: minmax(320px, 0.82fr) minmax(0, 1.18fr);
   align-items: start;
 }
 
@@ -195,6 +194,10 @@ img {
   justify-content: space-between;
   align-items: flex-start;
   gap: 18px;
+}
+
+.panel-heading-stack {
+  align-items: flex-end;
 }
 
 .library-card-header,
@@ -312,6 +315,12 @@ input[type="file"] {
   color: var(--muted);
 }
 
+.library-toolbar {
+  display: grid;
+  gap: 10px;
+  justify-items: end;
+}
+
 .collection-summary-grid,
 .import-source-switcher {
   display: grid;
@@ -344,6 +353,10 @@ input[type="file"] {
 
 .job-panel .job-list {
   margin-top: 18px;
+}
+
+.library-panel-priority {
+  padding-top: 24px;
 }
 
 .import-selector-panel {
@@ -499,6 +512,10 @@ input[type="file"] {
   line-height: 1.9;
 }
 
+.reader-copy {
+  white-space: pre-line;
+}
+
 .reader-block-quote p {
   padding-left: 16px;
   border-left: 4px solid var(--line);
@@ -624,6 +641,14 @@ input[type="file"] {
   .collection-summary-grid,
   .import-source-switcher {
     grid-template-columns: 1fr;
+  }
+
+  .panel-heading-stack {
+    align-items: flex-start;
+  }
+
+  .library-toolbar {
+    justify-items: start;
   }
 
   .page-card,

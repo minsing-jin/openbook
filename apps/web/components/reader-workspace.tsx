@@ -8,6 +8,43 @@ import { AIPanel } from "./ai-panel";
 import { NotesPanel } from "./notes-panel";
 import { useOpenBook } from "./openbook-provider";
 
+function readTextWithBreaksFromHtml(html?: string): string | null {
+  if (!html || typeof window === "undefined") {
+    return null;
+  }
+
+  const parser = new DOMParser();
+  const document = parser.parseFromString(html, "text/html");
+
+  function walk(node: Node): string {
+    if (node.nodeType === Node.TEXT_NODE) {
+      return node.textContent ?? "";
+    }
+
+    if (!(node instanceof window.Element)) {
+      return "";
+    }
+
+    if (node.tagName === "BR") {
+      return "\n";
+    }
+
+    const text = Array.from(node.childNodes).map(walk).join("");
+    if (node.tagName === "P" || node.tagName === "LI" || node.tagName === "BLOCKQUOTE" || node.tagName === "PRE") {
+      return `${text}\n`;
+    }
+
+    return text;
+  }
+
+  const text = walk(document.body).replace(/\n{3,}/g, "\n\n").trim();
+  return text || null;
+}
+
+function getDisplayText(text: string, html?: string): string {
+  return readTextWithBreaksFromHtml(html) ?? text;
+}
+
 function renderHighlightedText(text: string, highlights: Highlight[]) {
   if (highlights.length === 0) {
     return text;
@@ -246,6 +283,7 @@ export function ReaderWorkspace({ itemId }: { itemId: string }) {
             <div className="page-card" onMouseUp={handleSelection}>
               {currentPage.blocks.map((block) => {
                 const blockHighlights = pageHighlights.filter((highlight) => highlight.anchor.blockId === block.id);
+                const displayText = getDisplayText(block.text, block.html);
                 return (
                   <div key={block.id} className={`reader-block reader-block-${block.type}`} data-block-id={block.id}>
                     {block.type === "heading" ? (
@@ -256,7 +294,7 @@ export function ReaderWorkspace({ itemId }: { itemId: string }) {
                         <figcaption>{block.text}</figcaption>
                       </figure>
                     ) : (
-                      <p>{renderHighlightedText(block.text, blockHighlights)}</p>
+                      <p className="reader-copy">{renderHighlightedText(displayText, blockHighlights)}</p>
                     )}
                     {blockHighlights.length > 0 ? (
                       <div className="annotation-meta">

@@ -3,8 +3,40 @@ import { JSDOM } from "jsdom";
 import type { DocumentBlock, DocumentSnapshot, ImportBundle, ImportJob, LibraryItem } from "@openbook/core";
 import { createId, formatNow, snippetFromText } from "@openbook/core";
 
-function normalizeWhitespace(input: string): string {
-  return input.replace(/\s+/g, " ").trim();
+function normalizeWhitespace(input: string, preserveLineBreaks = false): string {
+  if (!preserveLineBreaks) {
+    return input.replace(/\s+/g, " ").trim();
+  }
+
+  return input
+    .replace(/\r\n/g, "\n")
+    .split("\n")
+    .map((line) => line.replace(/[^\S\n]+/g, " ").trim())
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+function extractTextWithBreaks(node: Node): string {
+  if (node.nodeType === node.TEXT_NODE) {
+    return node.textContent ?? "";
+  }
+
+  const elementCtor = node.ownerDocument?.defaultView?.Element;
+  if (!elementCtor || !(node instanceof elementCtor)) {
+    return "";
+  }
+
+  if (node.tagName === "BR") {
+    return "\n";
+  }
+
+  const childText = Array.from(node.childNodes).map(extractTextWithBreaks).join("");
+  if (node.tagName === "P" || node.tagName === "LI" || node.tagName === "BLOCKQUOTE" || node.tagName === "PRE") {
+    return `${childText}\n`;
+  }
+
+  return childText;
 }
 
 export function looksLikePdfUrl(url: string): boolean {
@@ -25,7 +57,9 @@ function createBlocksFromBody(document: Document, chapterId: string): DocumentBl
 
   for (const node of nodes) {
     const tagName = node.tagName.toLowerCase();
-    const text = normalizeWhitespace(node.textContent ?? "");
+    const rawText = extractTextWithBreaks(node);
+    const shouldPreserveLineBreaks = rawText.includes("\n") || tagName === "pre";
+    const text = normalizeWhitespace(rawText, shouldPreserveLineBreaks);
     if (!text && tagName !== "img") {
       continue;
     }

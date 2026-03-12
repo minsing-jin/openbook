@@ -19,13 +19,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="app-frame">
       <aside className="sidebar">
-        <div className="brand-card">
+        <div className="brand-badge">
           <p className="eyebrow">OpenBook</p>
-          <h1>Authenticated reading workspace</h1>
-          <p>
-            Import live reading pages into a stable book snapshot, annotate them, and chat over the book without
-            leaving the reader.
-          </p>
         </div>
 
         <nav className="nav-stack" aria-label="Primary">
