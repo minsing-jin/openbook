@@ -1,0 +1,13 @@
+{
+  "name": "openbook",
+  "private": true,
+  "packageManager": "pnpm@10.14.0",
+  "scripts": {
+    "dev": "pnpm --filter @openbook/web dev",
+    "build": "pnpm --filter @openbook/web build",
+    "typecheck": "pnpm --filter @openbook/web typecheck"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "name": "@openbook/extension",
+  "private": true,
+  "scripts": {
+    "build": "echo 'Load unpacked extension from apps/extension'"
+  }
+}

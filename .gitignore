@@ -1,0 +1,10 @@
+.next
+node_modules
+dist
+coverage
+.expo
+*.tsbuildinfo
+.DS_Store
+apps/web/.next
+apps/web/out
+apps/mobile/node_modules

@@ -1,0 +1,16 @@
+{
+  "expo": {
+    "name": "OpenBook",
+    "slug": "openbook",
+    "scheme": "openbook",
+    "orientation": "default",
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#f2efe8"
+      }
+    }
+  }
+}
