@@ -11,22 +11,18 @@ import { useOpenBook } from "./openbook-provider";
 const READING_FONT_OPTIONS: Array<{
   id: ReadingFontPreset;
   label: string;
-  helper: string;
 }> = [
   {
     id: "serif",
-    label: "Noto Serif KR",
-    helper: "Balanced book serif for Korean and English"
+    label: "Noto Serif KR"
   },
   {
     id: "sans",
-    label: "Noto Sans KR",
-    helper: "Cleaner sans style for dense reading"
+    label: "Noto Sans KR"
   },
   {
     id: "classic",
-    label: "Nanum Myeongjo",
-    helper: "Traditional literary serif tone"
+    label: "Nanum Myeongjo"
   }
 ];
 
@@ -263,21 +259,48 @@ export function ReaderWorkspace({ itemId }: { itemId: string }) {
               Page {currentPage.index} of {pages.length}
             </p>
           </div>
-          <div className="card-actions">
-            <button
-              className="button button-ghost"
-              type="button"
-              onClick={() => setCurrentPageIndex((value) => Math.max(1, value - 1))}
-            >
-              Previous
-            </button>
-            <button
-              className="button button-ghost"
-              type="button"
-              onClick={() => setCurrentPageIndex((value) => Math.min(pages.length, value + 1))}
-            >
-              Next
-            </button>
+          <div className="reader-toolbar-actions">
+            <div className="reader-font-switcher" role="radiogroup" aria-label="Reading font choices">
+              <span className="reader-toolbar-label">Font</span>
+              {READING_FONT_OPTIONS.map((fontOption) => (
+                <label
+                  key={fontOption.id}
+                  className={
+                    state.readerPreferences.fontPreset === fontOption.id
+                      ? "reader-font-chip reader-font-chip-active"
+                      : "reader-font-chip"
+                  }
+                >
+                  <input
+                    type="radio"
+                    name="reading-font"
+                    value={fontOption.id}
+                    checked={state.readerPreferences.fontPreset === fontOption.id}
+                    onChange={() => updateReaderPreferences({ fontPreset: fontOption.id })}
+                  />
+                  <span className={`reader-font-chip-label reader-font-chip-label-${fontOption.id}`}>
+                    {fontOption.label}
+                  </span>
+                </label>
+              ))}
+            </div>
+
+            <div className="card-actions">
+              <button
+                className="button button-ghost"
+                type="button"
+                onClick={() => setCurrentPageIndex((value) => Math.max(1, value - 1))}
+              >
+                Previous
+              </button>
+              <button
+                className="button button-ghost"
+                type="button"
+                onClick={() => setCurrentPageIndex((value) => Math.min(pages.length, value + 1))}
+              >
+                Next
+              </button>
+            </div>
           </div>
         </div>
 
@@ -302,37 +325,6 @@ export function ReaderWorkspace({ itemId }: { itemId: string }) {
           </div>
 
           <div className="page-stage">
-            <section className="reader-font-panel" aria-label="Reading font">
-              <div>
-                <p className="eyebrow">Reading font</p>
-                <h3>Switch fonts while reading</h3>
-              </div>
-              <div className="font-option-list" role="radiogroup" aria-label="Reading font choices">
-                {READING_FONT_OPTIONS.map((fontOption) => (
-                  <label
-                    key={fontOption.id}
-                    className={
-                      state.readerPreferences.fontPreset === fontOption.id
-                        ? "font-option-card font-option-card-active"
-                        : "font-option-card"
-                    }
-                  >
-                    <input
-                      type="radio"
-                      name="reading-font"
-                      value={fontOption.id}
-                      checked={state.readerPreferences.fontPreset === fontOption.id}
-                      onChange={() => updateReaderPreferences({ fontPreset: fontOption.id })}
-                    />
-                    <span className={`font-option-preview font-option-preview-${fontOption.id}`}>
-                      {fontOption.label}
-                    </span>
-                    <span className="font-option-helper">{fontOption.helper}</span>
-                  </label>
-                ))}
-              </div>
-            </section>
-
             <div
               className={`page-card reader-font-${state.readerPreferences.fontPreset}`}
               onMouseUp={handleSelection}
