@@ -1,0 +1,11 @@
+.git
+.gitignore
+.next
+.pnpm-store
+.ralph
+node_modules
+apps/web/.next
+apps/mobile/node_modules
+coverage
+dist
+Dockerfile

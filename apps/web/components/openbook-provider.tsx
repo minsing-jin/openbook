@@ -4,6 +4,7 @@ import {
   createId,
   createSeedState,
   formatNow,
+  getActiveApiKey,
   mergeState,
   upsertJob,
   type Anchor,
@@ -46,6 +47,10 @@ interface AskBookInput {
   selection?: string;
 }
 
+type SettingsUpdate = Partial<Omit<AppSettings, "apiKeys">> & {
+  apiKeys?: Partial<AppSettings["apiKeys"]>;
+};
+
 interface OpenBookContextValue {
   ready: boolean;
   state: OpenBookState;
@@ -62,7 +67,7 @@ interface OpenBookContextValue {
   updateTextNote: (noteId: string, updates: Partial<Pick<NoteEntry, "title" | "body" | "pageIndex">>) => void;
   saveSketchNote: (input: SaveSketchNoteInput) => void;
   askBook: (input: AskBookInput) => Promise<void>;
-  updateSettings: (updates: Partial<AppSettings>) => void;
+  updateSettings: (updates: SettingsUpdate) => void;
   updateReaderPreferences: (updates: Partial<ReaderPreferences>) => void;
   touchItem: (itemId: string) => void;
   resetDemo: () => void;
@@ -276,8 +281,9 @@ export function OpenBookProvider({ children }: { children: ReactNode }) {
             snapshot,
             question: input.question,
             selection: input.selection,
-            apiKey: state.settings.openAIApiKey,
-            model: state.settings.openAIApiModel
+            provider: state.settings.aiProvider,
+            apiKey: getActiveApiKey(state.settings),
+            model: state.settings.aiModel
           })
         });
         const payload = (await response.json()) as {
@@ -307,7 +313,13 @@ export function OpenBookProvider({ children }: { children: ReactNode }) {
           ...current,
           settings: {
             ...current.settings,
-            ...updates
+            ...updates,
+            apiKeys: updates.apiKeys
+              ? {
+                  ...current.settings.apiKeys,
+                  ...updates.apiKeys
+                }
+              : current.settings.apiKeys
           }
         }));
       },

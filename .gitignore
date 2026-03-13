@@ -9,3 +9,6 @@ apps/web/.next
 apps/web/out
 apps/mobile/node_modules
 .ralph
+.env
+.env.local
+.env.*.local

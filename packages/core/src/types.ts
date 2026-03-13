@@ -19,6 +19,7 @@ export type ImportStage =
 export type BlockType = "heading" | "paragraph" | "quote" | "code" | "list-item" | "image";
 
 export type NoteType = "text_note" | "sketch_note";
+export type AIProvider = "openai" | "anthropic" | "xai" | "gemini";
 
 export interface TocEntry {
   id: string;
@@ -156,8 +157,9 @@ export interface ReaderPreferences {
 }
 
 export interface AppSettings {
-  openAIApiKey: string;
-  openAIApiModel: string;
+  aiProvider: AIProvider;
+  aiModel: string;
+  apiKeys: Record<AIProvider, string>;
   captureMode: "browser-extension" | "in-app-webview";
 }
 

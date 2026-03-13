@@ -66,6 +66,11 @@ export function upsertJob(jobs: ImportJob[], job: ImportJob): ImportJob[] {
 }
 
 export function mergeState(partial: Partial<OpenBookState>, base: OpenBookState): OpenBookState {
+  const partialSettings = (partial.settings ?? {}) as Partial<OpenBookState["settings"]> & {
+    openAIApiKey?: string;
+    openAIApiModel?: string;
+  };
+
   return {
     ...base,
     ...partial,
@@ -74,7 +79,22 @@ export function mergeState(partial: Partial<OpenBookState>, base: OpenBookState)
     notes: partial.notes ?? base.notes,
     chatThreads: partial.chatThreads ?? base.chatThreads,
     importJobs: partial.importJobs ?? base.importJobs,
-    settings: partial.settings ?? base.settings,
-    readerPreferences: partial.readerPreferences ?? base.readerPreferences
+    settings: {
+      ...base.settings,
+      ...partialSettings,
+      aiModel: partialSettings.aiModel ?? partialSettings.openAIApiModel ?? base.settings.aiModel,
+      apiKeys: {
+        ...base.settings.apiKeys,
+        ...(partialSettings.apiKeys ?? {}),
+        openai:
+          partialSettings.openAIApiKey ??
+          partialSettings.apiKeys?.openai ??
+          base.settings.apiKeys.openai
+      }
+    },
+    readerPreferences: {
+      ...base.readerPreferences,
+      ...(partial.readerPreferences ?? {})
+    }
   };
 }

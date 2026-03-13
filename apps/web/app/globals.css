@@ -322,7 +322,8 @@ input[type="file"] {
 }
 
 .collection-summary-grid,
-.import-source-switcher {
+.import-source-switcher,
+.preset-grid {
   display: grid;
   gap: 12px;
 }
@@ -451,6 +452,10 @@ input[type="file"] {
 .segment-active {
   background: var(--ink);
   color: #fff8ee;
+}
+
+.preset-grid {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 }
 
 .reader-layout {

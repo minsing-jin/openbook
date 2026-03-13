@@ -1,4 +1,5 @@
 import type { DocumentSnapshot, LibraryItem, NoteEntry, OpenBookState } from "./types";
+import { DEFAULT_AI_MODELS } from "./ai";
 import { createId, formatNow, snippetFromText } from "./utils";
 
 function createSnapshotBook(): DocumentSnapshot {
@@ -237,8 +238,14 @@ export function createSeedState(): OpenBookState {
     ],
     importJobs: [],
     settings: {
-      openAIApiKey: "",
-      openAIApiModel: "gpt-4.1-mini",
+      aiProvider: "openai",
+      aiModel: DEFAULT_AI_MODELS.openai,
+      apiKeys: {
+        openai: "",
+        anthropic: "",
+        xai: "",
+        gemini: ""
+      },
       captureMode: "browser-extension"
     },
     readerPreferences: {

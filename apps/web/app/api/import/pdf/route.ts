@@ -2,6 +2,8 @@ import type { ImportJob, LibraryItem } from "@openbook/core";
 import { createId, formatNow } from "@openbook/core";
 import { cacheJob, serializeJob } from "../../../../lib/server-job-cache";
 
+export const runtime = "nodejs";
+
 export async function POST(request: Request) {
   const body = (await request.json()) as { fileName?: string; dataUrl?: string };
   if (!body.fileName || !body.dataUrl) {
