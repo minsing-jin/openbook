@@ -164,7 +164,7 @@ img {
 }
 
 .reader-grid {
-  grid-template-columns: minmax(0, 2fr) minmax(360px, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   align-items: start;
 }
 
@@ -172,6 +172,11 @@ img {
 .tool-panel,
 .reader-surface {
   padding: 22px;
+}
+
+.reader-surface {
+  position: relative;
+  overflow: visible;
 }
 
 .library-grid {
@@ -470,6 +475,14 @@ input[type="file"] {
   gap: 18px;
 }
 
+.reader-surface-docked {
+  padding-right: 108px;
+}
+
+.reader-surface-docked-open {
+  padding-right: 420px;
+}
+
 .reader-toolbar-actions {
   display: grid;
   gap: 12px;
@@ -648,24 +661,38 @@ input[type="file"] {
   color: #735617;
 }
 
-.notebook-dock {
-  position: relative;
-  padding-right: 92px;
-  overflow: visible;
+.reader-dock {
+  position: absolute;
+  top: 92px;
+  right: -12px;
+  width: 402px;
+  min-height: 72px;
 }
 
-.bookmark-rail {
+.reader-dock-panel {
+  margin-right: 86px;
+  padding: 18px;
+  border-radius: 24px 0 24px 24px;
+  border: 1px solid rgba(111, 87, 57, 0.14);
+  background: linear-gradient(180deg, rgba(255, 253, 247, 0.98), rgba(244, 237, 223, 0.98));
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: 14px;
+  min-height: 280px;
+}
+
+.reader-bookmark-rail {
   position: absolute;
   top: 18px;
-  right: -12px;
+  right: 0;
   display: grid;
   gap: 10px;
 }
 
-.bookmark-tab {
-  width: 96px;
-  min-height: 56px;
-  padding: 12px 14px 12px 12px;
+.reader-bookmark-tab {
+  width: 82px;
+  min-height: 58px;
+  padding: 12px 12px 12px 10px;
   border: 1px solid rgba(111, 87, 57, 0.14);
   border-left: 0;
   border-radius: 0 16px 16px 0;
@@ -676,22 +703,14 @@ input[type="file"] {
   box-shadow: var(--shadow);
 }
 
-.bookmark-tab-active {
+.reader-bookmark-tab:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.reader-bookmark-tab-active {
   background: var(--accent);
   color: #fff8ee;
-}
-
-.notebook-body {
-  display: grid;
-  gap: 14px;
-}
-
-.notebook-empty {
-  padding: 18px;
-  border-radius: 18px;
-  background: rgba(33, 77, 65, 0.06);
-  color: var(--muted);
-  line-height: 1.6;
 }
 
 .note-card {
@@ -787,16 +806,31 @@ input[type="file"] {
     justify-content: flex-start;
   }
 
-  .notebook-dock {
+  .reader-surface-docked,
+  .reader-surface-docked-open {
     padding-right: 22px;
   }
 
-  .bookmark-rail {
+  .reader-dock {
     position: static;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+    min-height: 0;
+    margin-top: 18px;
   }
 
-  .bookmark-tab {
+  .reader-dock-panel {
+    margin-right: 0;
+    border-radius: 24px;
+    min-height: 0;
+  }
+
+  .reader-bookmark-rail {
+    position: static;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-bottom: 12px;
+  }
+
+  .reader-bookmark-tab {
     width: auto;
     border-left: 1px solid rgba(111, 87, 57, 0.14);
     border-radius: 16px;

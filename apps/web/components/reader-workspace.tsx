@@ -4,9 +4,8 @@ import type { Anchor, Highlight, LibraryItem, ReadingFontPreset } from "@openboo
 import { paginateSnapshot, resolveAnchorText } from "@openbook/reader";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { AIPanel } from "./ai-panel";
-import { NotesPanel } from "./notes-panel";
 import { useOpenBook } from "./openbook-provider";
+import { ReaderDock } from "./reader-dock";
 
 const READING_FONT_OPTIONS: Array<{
   id: ReadingFontPreset;
@@ -104,6 +103,7 @@ export function ReaderWorkspace({ itemId }: { itemId: string }) {
   const [currentPageIndex, setCurrentPageIndex] = useState(1);
   const [selectedText, setSelectedText] = useState("");
   const [pendingAnchor, setPendingAnchor] = useState<Anchor | undefined>(undefined);
+  const [activeDockTab, setActiveDockTab] = useState<"chat" | "text" | "sketch" | null>(null);
 
   const item = state.library.find((entry) => entry.id === itemId);
   const pages = useMemo(() => {
@@ -134,7 +134,14 @@ export function ReaderWorkspace({ itemId }: { itemId: string }) {
 
   useEffect(() => {
     setCurrentPageIndex(1);
+    setActiveDockTab(null);
   }, [itemId]);
+
+  useEffect(() => {
+    if (selectedText) {
+      setActiveDockTab("text");
+    }
+  }, [selectedText]);
 
   if (!ready) {
     return <section className="page-shell">Loading reader…</section>;
@@ -219,25 +226,49 @@ export function ReaderWorkspace({ itemId }: { itemId: string }) {
   function renderReader(itemToRender: LibraryItem) {
     if (itemToRender.kind === "pdf_book") {
       return (
-        <article className="reader-surface">
+        <article
+          className={
+            activeDockTab ? "reader-surface reader-surface-docked reader-surface-docked-open" : "reader-surface reader-surface-docked"
+          }
+        >
           <div className="reader-toolbar">
             <strong>{itemToRender.title}</strong>
             <span className="badge badge-soft">PDF viewer</span>
           </div>
           <iframe className="pdf-frame" src={itemToRender.sourceUrl} title={itemToRender.title} />
+          <ReaderDock
+            notesDocId={itemToRender.id}
+            currentPageIndex={currentPageIndex}
+            pendingAnchor={pendingAnchor}
+            pendingSelection={selectedText}
+            activeTab={activeDockTab}
+            onActiveTabChange={setActiveDockTab}
+          />
         </article>
       );
     }
 
     if (itemToRender.kind === "web_shortcut") {
       return (
-        <article className="reader-surface">
+        <article
+          className={
+            activeDockTab ? "reader-surface reader-surface-docked reader-surface-docked-open" : "reader-surface reader-surface-docked"
+          }
+        >
           <div className="reader-toolbar">
             <strong>{itemToRender.title}</strong>
             <span className="badge badge-soft">Web shortcut</span>
           </div>
           <p className="empty-state">Full snapshot import was not available. Open the live page inside the fallback viewer.</p>
           <iframe className="pdf-frame" src={itemToRender.sourceUrl} title={itemToRender.title} />
+          <ReaderDock
+            notesDocId={itemToRender.id}
+            currentPageIndex={currentPageIndex}
+            pendingAnchor={pendingAnchor}
+            pendingSelection={selectedText}
+            activeTab={activeDockTab}
+            onActiveTabChange={setActiveDockTab}
+          />
         </article>
       );
     }
@@ -251,7 +282,11 @@ export function ReaderWorkspace({ itemId }: { itemId: string }) {
     }
 
     return (
-      <article className="reader-surface">
+      <article
+        className={
+          activeDockTab ? "reader-surface reader-surface-docked reader-surface-docked-open" : "reader-surface reader-surface-docked"
+        }
+      >
         <div className="reader-toolbar">
           <div>
             <strong>{itemToRender.snapshot.title}</strong>
@@ -384,6 +419,16 @@ export function ReaderWorkspace({ itemId }: { itemId: string }) {
             ) : null}
           </div>
         </div>
+
+        <ReaderDock
+          notesDocId={itemToRender.snapshot.docId}
+          chatDocId={itemToRender.snapshot.docId}
+          currentPageIndex={currentPageIndex}
+          pendingAnchor={pendingAnchor}
+          pendingSelection={selectedText}
+          activeTab={activeDockTab}
+          onActiveTabChange={setActiveDockTab}
+        />
       </article>
     );
   }
@@ -400,18 +445,7 @@ export function ReaderWorkspace({ itemId }: { itemId: string }) {
         </a>
       </div>
 
-      <div className="reader-grid">
-        {renderReader(activeItem)}
-        <div className="tools-stack">
-          <NotesPanel
-            docId={activeSnapshot?.docId ?? activeItem.id}
-            currentPageIndex={currentPageIndex}
-            pendingAnchor={pendingAnchor}
-            pendingSelection={selectedText}
-          />
-          {activeSnapshot ? <AIPanel docId={activeSnapshot.docId} selection={selectedText} /> : null}
-        </div>
-      </div>
+      <div className="reader-grid">{renderReader(activeItem)}</div>
     </section>
   );
 }
