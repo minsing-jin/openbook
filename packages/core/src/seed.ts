@@ -249,6 +249,7 @@ export function createSeedState(): OpenBookState {
       captureMode: "browser-extension"
     },
     readerPreferences: {
+      fontPreset: "serif",
       fontScale: 1,
       lineHeight: 1.7,
       pageCharLimit: 850,

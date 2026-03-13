@@ -20,6 +20,7 @@ export type BlockType = "heading" | "paragraph" | "quote" | "code" | "list-item"
 
 export type NoteType = "text_note" | "sketch_note";
 export type AIProvider = "openai" | "anthropic" | "xai" | "gemini";
+export type ReadingFontPreset = "serif" | "sans" | "classic";
 
 export interface TocEntry {
   id: string;
@@ -150,6 +151,7 @@ export interface ChatThread {
 }
 
 export interface ReaderPreferences {
+  fontPreset: ReadingFontPreset;
   fontScale: number;
   lineHeight: number;
   pageCharLimit: number;

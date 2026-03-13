@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@400;500;700&display=swap");
+
 :root {
   --bg: #efe9dc;
   --panel: #fffaf1;
@@ -11,6 +13,9 @@
   --coral: #f5b7a6;
   --mint: #a6d9ca;
   --shadow: 0 20px 60px rgba(57, 43, 24, 0.08);
+  --reader-font-serif: "Noto Serif KR", "Apple SD Gothic Neo", "Malgun Gothic", serif;
+  --reader-font-sans: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --reader-font-classic: "Nanum Myeongjo", "Noto Serif KR", "Apple SD Gothic Neo", serif;
 }
 
 * {
@@ -492,12 +497,88 @@ input[type="file"] {
   gap: 14px;
 }
 
+.reader-font-panel {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  border-radius: 22px;
+  border: 1px solid rgba(111, 87, 57, 0.12);
+  background: linear-gradient(180deg, rgba(255, 253, 247, 0.98), rgba(244, 237, 223, 0.98));
+}
+
+.reader-font-panel h3 {
+  margin: 6px 0 0;
+  font-size: 1.05rem;
+}
+
+.font-option-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.font-option-card {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px solid rgba(111, 87, 57, 0.14);
+  background: rgba(255, 250, 241, 0.86);
+  cursor: pointer;
+}
+
+.font-option-card-active {
+  border-color: rgba(33, 77, 65, 0.36);
+  background: linear-gradient(135deg, rgba(33, 77, 65, 0.1), rgba(255, 250, 241, 0.92));
+  box-shadow: 0 12px 24px rgba(33, 77, 65, 0.08);
+}
+
+.font-option-card input {
+  margin: 0;
+}
+
+.font-option-preview {
+  color: var(--ink);
+  font-size: 1rem;
+}
+
+.font-option-preview-serif {
+  font-family: var(--reader-font-serif);
+}
+
+.font-option-preview-sans {
+  font-family: var(--reader-font-sans);
+}
+
+.font-option-preview-classic {
+  font-family: var(--reader-font-classic);
+}
+
+.font-option-helper {
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
 .page-card {
   padding: 26px;
   background:
     linear-gradient(180deg, rgba(255, 253, 247, 0.95), rgba(247, 241, 229, 0.95)),
     radial-gradient(circle at top right, rgba(245, 183, 166, 0.15), transparent 30%);
   min-height: 74vh;
+  font-family: var(--reader-font-serif);
+}
+
+.reader-font-serif {
+  font-family: var(--reader-font-serif);
+}
+
+.reader-font-sans {
+  font-family: var(--reader-font-sans);
+}
+
+.reader-font-classic {
+  font-family: var(--reader-font-classic);
 }
 
 .reader-block {
@@ -644,7 +725,8 @@ input[type="file"] {
   }
 
   .collection-summary-grid,
-  .import-source-switcher {
+  .import-source-switcher,
+  .font-option-list {
     grid-template-columns: 1fr;
   }
 

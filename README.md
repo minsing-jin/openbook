@@ -12,6 +12,7 @@ OpenBook is a tablet-first reading workspace for imported PDFs, authenticated we
 - Reader workspace with:
   - virtual pages for snapshot books
   - PDF fallback viewer
+  - in-reader font switching with three Korean and English reading fonts
   - linked text highlights from drag selection
   - linked text notes and free-form text notebook
   - sketch notebook for Pencil and stylus-style input

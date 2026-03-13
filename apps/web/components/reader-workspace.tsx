@@ -1,12 +1,34 @@
 "use client";
 
-import type { Anchor, Highlight, LibraryItem } from "@openbook/core";
+import type { Anchor, Highlight, LibraryItem, ReadingFontPreset } from "@openbook/core";
 import { paginateSnapshot, resolveAnchorText } from "@openbook/reader";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { AIPanel } from "./ai-panel";
 import { NotesPanel } from "./notes-panel";
 import { useOpenBook } from "./openbook-provider";
+
+const READING_FONT_OPTIONS: Array<{
+  id: ReadingFontPreset;
+  label: string;
+  helper: string;
+}> = [
+  {
+    id: "serif",
+    label: "Noto Serif KR",
+    helper: "Balanced book serif for Korean and English"
+  },
+  {
+    id: "sans",
+    label: "Noto Sans KR",
+    helper: "Cleaner sans style for dense reading"
+  },
+  {
+    id: "classic",
+    label: "Nanum Myeongjo",
+    helper: "Traditional literary serif tone"
+  }
+];
 
 function readTextWithBreaksFromHtml(html?: string): string | null {
   if (!html || typeof window === "undefined") {
@@ -82,7 +104,7 @@ function renderHighlightedText(text: string, highlights: Highlight[]) {
 
 export function ReaderWorkspace({ itemId }: { itemId: string }) {
   const router = useRouter();
-  const { ready, state, addHighlight, addTextNote, touchItem } = useOpenBook();
+  const { ready, state, addHighlight, addTextNote, touchItem, updateReaderPreferences } = useOpenBook();
   const [currentPageIndex, setCurrentPageIndex] = useState(1);
   const [selectedText, setSelectedText] = useState("");
   const [pendingAnchor, setPendingAnchor] = useState<Anchor | undefined>(undefined);
@@ -280,7 +302,41 @@ export function ReaderWorkspace({ itemId }: { itemId: string }) {
           </div>
 
           <div className="page-stage">
-            <div className="page-card" onMouseUp={handleSelection}>
+            <section className="reader-font-panel" aria-label="Reading font">
+              <div>
+                <p className="eyebrow">Reading font</p>
+                <h3>Switch fonts while reading</h3>
+              </div>
+              <div className="font-option-list" role="radiogroup" aria-label="Reading font choices">
+                {READING_FONT_OPTIONS.map((fontOption) => (
+                  <label
+                    key={fontOption.id}
+                    className={
+                      state.readerPreferences.fontPreset === fontOption.id
+                        ? "font-option-card font-option-card-active"
+                        : "font-option-card"
+                    }
+                  >
+                    <input
+                      type="radio"
+                      name="reading-font"
+                      value={fontOption.id}
+                      checked={state.readerPreferences.fontPreset === fontOption.id}
+                      onChange={() => updateReaderPreferences({ fontPreset: fontOption.id })}
+                    />
+                    <span className={`font-option-preview font-option-preview-${fontOption.id}`}>
+                      {fontOption.label}
+                    </span>
+                    <span className="font-option-helper">{fontOption.helper}</span>
+                  </label>
+                ))}
+              </div>
+            </section>
+
+            <div
+              className={`page-card reader-font-${state.readerPreferences.fontPreset}`}
+              onMouseUp={handleSelection}
+            >
               {currentPage.blocks.map((block) => {
                 const blockHighlights = pageHighlights.filter((highlight) => highlight.anchor.blockId === block.id);
                 const displayText = getDisplayText(block.text, block.html);
