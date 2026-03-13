@@ -93,10 +93,10 @@ export function ReaderDock({
     }
   }
 
-  const tabs: Array<{ id: ReaderDockTab; label: string; disabled?: boolean }> = [
-    { id: "chat", label: "Chat", disabled: !chatDocId },
-    { id: "text", label: "Text" },
-    { id: "sketch", label: "Sketch" }
+  const tabs: Array<{ id: ReaderDockTab; label: string; disabled?: boolean; tone: string }> = [
+    { id: "chat", label: "Chat", disabled: !chatDocId, tone: "chat" },
+    { id: "text", label: "Memo", tone: "memo" },
+    { id: "sketch", label: "Sketch", tone: "sketch" }
   ];
 
   return (
@@ -234,7 +234,11 @@ export function ReaderDock({
           <button
             key={tab.id}
             type="button"
-            className={activeTab === tab.id ? "reader-bookmark-tab reader-bookmark-tab-active" : "reader-bookmark-tab"}
+            className={
+              activeTab === tab.id
+                ? `reader-bookmark-tab reader-bookmark-tab-${tab.tone} reader-bookmark-tab-active`
+                : `reader-bookmark-tab reader-bookmark-tab-${tab.tone}`
+            }
             onClick={() => {
               if (tab.disabled) {
                 return;

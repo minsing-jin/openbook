@@ -693,14 +693,30 @@ input[type="file"] {
   width: 82px;
   min-height: 58px;
   padding: 12px 12px 12px 10px;
-  border: 1px solid rgba(111, 87, 57, 0.14);
+  border: 1px solid rgba(111, 87, 57, 0.18);
   border-left: 0;
   border-radius: 0 16px 16px 0;
-  background: linear-gradient(180deg, rgba(255, 252, 245, 0.98), rgba(244, 236, 220, 0.98));
-  color: var(--muted);
+  color: #3d2e23;
   text-align: left;
   cursor: pointer;
-  box-shadow: var(--shadow);
+  box-shadow:
+    0 10px 24px rgba(57, 43, 24, 0.14),
+    inset 0 -10px 18px rgba(0, 0, 0, 0.04);
+  font-weight: 700;
+}
+
+.reader-bookmark-tab-chat {
+  background: linear-gradient(180deg, #f3c97f 0%, #dca44f 100%);
+}
+
+.reader-bookmark-tab-memo {
+  background: linear-gradient(180deg, #d86a5a 0%, #b94a3f 100%);
+  color: #fff5ee;
+}
+
+.reader-bookmark-tab-sketch {
+  background: linear-gradient(180deg, #7aa08d 0%, #4e7866 100%);
+  color: #f4fbf7;
 }
 
 .reader-bookmark-tab:disabled {
@@ -709,8 +725,10 @@ input[type="file"] {
 }
 
 .reader-bookmark-tab-active {
-  background: var(--accent);
-  color: #fff8ee;
+  transform: translateX(-8px);
+  box-shadow:
+    0 18px 30px rgba(57, 43, 24, 0.18),
+    inset 0 -12px 20px rgba(0, 0, 0, 0.06);
 }
 
 .note-card {
