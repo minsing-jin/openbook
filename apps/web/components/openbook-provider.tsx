@@ -70,6 +70,7 @@ interface OpenBookContextValue {
   updateSettings: (updates: SettingsUpdate) => void;
   updateReaderPreferences: (updates: Partial<ReaderPreferences>) => void;
   touchItem: (itemId: string) => void;
+  updateReadingProgress: (itemId: string, pageIndex: number) => void;
   resetDemo: () => void;
 }
 
@@ -340,6 +341,19 @@ export function OpenBookProvider({ children }: { children: ReactNode }) {
               ? {
                   ...item,
                   lastOpenedAt: formatNow()
+                }
+              : item
+          )
+        }));
+      },
+      updateReadingProgress(itemId, pageIndex) {
+        setState((current) => ({
+          ...current,
+          library: current.library.map((item) =>
+            item.id === itemId
+              ? {
+                  ...item,
+                  lastReadPageIndex: pageIndex
                 }
               : item
           )

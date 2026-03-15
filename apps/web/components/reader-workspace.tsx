@@ -1,6 +1,6 @@
 "use client";
 
-import type { Anchor, Highlight, LibraryItem, ReadingFontPreset } from "@openbook/core";
+import { snippetFromText, type Anchor, type Highlight, type LibraryItem, type ReadingFontPreset } from "@openbook/core";
 import { paginateSnapshot, resolveAnchorText } from "@openbook/reader";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -99,11 +99,15 @@ function renderHighlightedText(text: string, highlights: Highlight[]) {
 
 export function ReaderWorkspace({ itemId }: { itemId: string }) {
   const router = useRouter();
-  const { ready, state, addHighlight, addTextNote, touchItem, updateReaderPreferences } = useOpenBook();
+  const { ready, state, addHighlight, addTextNote, touchItem, updateReaderPreferences, updateReadingProgress } =
+    useOpenBook();
   const [currentPageIndex, setCurrentPageIndex] = useState(1);
   const [selectedText, setSelectedText] = useState("");
   const [pendingAnchor, setPendingAnchor] = useState<Anchor | undefined>(undefined);
   const [activeDockTab, setActiveDockTab] = useState<"chat" | "text" | "sketch" | null>(null);
+  const [isPageDrawerOpen, setIsPageDrawerOpen] = useState(false);
+  const [resumePromptPage, setResumePromptPage] = useState<number | null>(null);
+  const [resumePromptInitialized, setResumePromptInitialized] = useState(false);
 
   const item = state.library.find((entry) => entry.id === itemId);
   const pages = useMemo(() => {
@@ -135,13 +139,55 @@ export function ReaderWorkspace({ itemId }: { itemId: string }) {
   useEffect(() => {
     setCurrentPageIndex(1);
     setActiveDockTab(null);
+    setIsPageDrawerOpen(false);
+    setResumePromptPage(null);
+    setResumePromptInitialized(false);
   }, [itemId]);
 
   useEffect(() => {
     if (selectedText) {
+      setIsPageDrawerOpen(false);
       setActiveDockTab("text");
     }
   }, [selectedText]);
+
+  useEffect(() => {
+    if (activeDockTab) {
+      setIsPageDrawerOpen(false);
+    }
+  }, [activeDockTab]);
+
+  useEffect(() => {
+    if (!item?.snapshot || pages.length === 0 || resumePromptInitialized) {
+      return;
+    }
+
+    const rememberedPage = item.lastReadPageIndex;
+    if (rememberedPage && rememberedPage > 1 && rememberedPage <= pages.length) {
+      setResumePromptPage(rememberedPage);
+    }
+    setResumePromptInitialized(true);
+  }, [item?.lastReadPageIndex, item?.snapshot, pages.length, resumePromptInitialized]);
+
+  useEffect(() => {
+    if (!item?.snapshot || !resumePromptInitialized || resumePromptPage !== null) {
+      return;
+    }
+
+    if (item.lastReadPageIndex === currentPageIndex) {
+      return;
+    }
+
+    updateReadingProgress(item.id, currentPageIndex);
+  }, [
+    currentPageIndex,
+    item?.id,
+    item?.lastReadPageIndex,
+    item?.snapshot,
+    resumePromptInitialized,
+    resumePromptPage,
+    updateReadingProgress
+  ]);
 
   if (!ready) {
     return <section className="page-shell">Loading reader…</section>;
@@ -223,12 +269,28 @@ export function ReaderWorkspace({ itemId }: { itemId: string }) {
     window.getSelection()?.removeAllRanges();
   }
 
+  function getPagePreview(page: (typeof pages)[number]): string {
+    const previewText = page.blocks
+      .map((block) => block.text)
+      .join(" ")
+      .replace(/\s+/g, " ")
+      .trim();
+    return snippetFromText(previewText, 180);
+  }
+
+  function togglePageDrawer() {
+    setActiveDockTab(null);
+    setIsPageDrawerOpen((current) => !current);
+  }
+
   function renderReader(itemToRender: LibraryItem) {
     if (itemToRender.kind === "pdf_book") {
       return (
         <article
           className={
-            activeDockTab ? "reader-surface reader-surface-docked reader-surface-docked-open" : "reader-surface reader-surface-docked"
+            activeDockTab || isPageDrawerOpen
+              ? "reader-surface reader-surface-docked reader-surface-docked-open"
+              : "reader-surface reader-surface-docked"
           }
         >
           <div className="reader-toolbar">
@@ -242,7 +304,10 @@ export function ReaderWorkspace({ itemId }: { itemId: string }) {
             pendingAnchor={pendingAnchor}
             pendingSelection={selectedText}
             activeTab={activeDockTab}
-            onActiveTabChange={setActiveDockTab}
+            onActiveTabChange={(tab) => {
+              setIsPageDrawerOpen(false);
+              setActiveDockTab(tab);
+            }}
           />
         </article>
       );
@@ -252,7 +317,9 @@ export function ReaderWorkspace({ itemId }: { itemId: string }) {
       return (
         <article
           className={
-            activeDockTab ? "reader-surface reader-surface-docked reader-surface-docked-open" : "reader-surface reader-surface-docked"
+            activeDockTab || isPageDrawerOpen
+              ? "reader-surface reader-surface-docked reader-surface-docked-open"
+              : "reader-surface reader-surface-docked"
           }
         >
           <div className="reader-toolbar">
@@ -267,7 +334,10 @@ export function ReaderWorkspace({ itemId }: { itemId: string }) {
             pendingAnchor={pendingAnchor}
             pendingSelection={selectedText}
             activeTab={activeDockTab}
-            onActiveTabChange={setActiveDockTab}
+            onActiveTabChange={(tab) => {
+              setIsPageDrawerOpen(false);
+              setActiveDockTab(tab);
+            }}
           />
         </article>
       );
@@ -284,7 +354,9 @@ export function ReaderWorkspace({ itemId }: { itemId: string }) {
     return (
       <article
         className={
-          activeDockTab ? "reader-surface reader-surface-docked reader-surface-docked-open" : "reader-surface reader-surface-docked"
+          activeDockTab || isPageDrawerOpen
+            ? "reader-surface reader-surface-docked reader-surface-docked-open"
+            : "reader-surface reader-surface-docked"
         }
       >
         <div className="reader-toolbar">
@@ -295,6 +367,15 @@ export function ReaderWorkspace({ itemId }: { itemId: string }) {
             </p>
           </div>
           <div className="reader-toolbar-actions">
+            <div className="card-actions">
+              <button
+                className={isPageDrawerOpen ? "button button-primary" : "button button-ghost"}
+                type="button"
+                onClick={togglePageDrawer}
+              >
+                Page shortcuts
+              </button>
+            </div>
             <div className="reader-font-switcher" role="radiogroup" aria-label="Reading font choices">
               <span className="reader-toolbar-label">Font</span>
               {READING_FONT_OPTIONS.map((fontOption) => (
@@ -420,6 +501,71 @@ export function ReaderWorkspace({ itemId }: { itemId: string }) {
           </div>
         </div>
 
+        {resumePromptPage ? (
+          <div className="reader-modal-backdrop">
+            <div className="reader-modal">
+              <p className="eyebrow">Resume reading</p>
+              <h3>Open this book from page {resumePromptPage}?</h3>
+              <p>You can continue from the page you last read or start again from page 1.</p>
+              <div className="card-actions">
+                <button
+                  className="button button-primary"
+                  type="button"
+                  onClick={() => {
+                    setCurrentPageIndex(resumePromptPage);
+                    setResumePromptPage(null);
+                  }}
+                >
+                  Resume from page {resumePromptPage}
+                </button>
+                <button
+                  className="button button-ghost"
+                  type="button"
+                  onClick={() => {
+                    setCurrentPageIndex(1);
+                    setResumePromptPage(null);
+                  }}
+                >
+                  Start from page 1
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : null}
+
+        {isPageDrawerOpen ? (
+          <aside className="page-preview-drawer" aria-label="Page shortcuts">
+            <div className="page-preview-header">
+              <div>
+                <p className="eyebrow">Page shortcuts</p>
+                <h3>Jump to any virtual page</h3>
+              </div>
+              <button className="button button-ghost" type="button" onClick={() => setIsPageDrawerOpen(false)}>
+                Close
+              </button>
+            </div>
+            <div className="page-preview-list">
+              {pages.map((page) => (
+                <button
+                  key={page.index}
+                  type="button"
+                  className={currentPageIndex === page.index ? "page-preview-card page-preview-card-active" : "page-preview-card"}
+                  onClick={() => {
+                    setCurrentPageIndex(page.index);
+                    setIsPageDrawerOpen(false);
+                  }}
+                >
+                  <div className="page-preview-meta">
+                    <strong>Page {page.index}</strong>
+                    <span>{page.title}</span>
+                  </div>
+                  <p>{getPagePreview(page)}</p>
+                </button>
+              ))}
+            </div>
+          </aside>
+        ) : null}
+
         <ReaderDock
           notesDocId={itemToRender.snapshot.docId}
           chatDocId={itemToRender.snapshot.docId}
@@ -427,7 +573,10 @@ export function ReaderWorkspace({ itemId }: { itemId: string }) {
           pendingAnchor={pendingAnchor}
           pendingSelection={selectedText}
           activeTab={activeDockTab}
-          onActiveTabChange={setActiveDockTab}
+          onActiveTabChange={(tab) => {
+            setIsPageDrawerOpen(false);
+            setActiveDockTab(tab);
+          }}
         />
       </article>
     );

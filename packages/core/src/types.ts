@@ -80,6 +80,7 @@ export interface LibraryItem {
   description: string;
   createdAt: string;
   lastOpenedAt?: string;
+  lastReadPageIndex?: number;
   cover?: string;
   language: string;
   tags: string[];
