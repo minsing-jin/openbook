@@ -484,6 +484,8 @@ input[type="file"] {
 }
 
 .reader-toolbar-actions {
+  position: relative;
+  z-index: 6;
   display: grid;
   gap: 12px;
   justify-items: end;
@@ -524,6 +526,8 @@ input[type="file"] {
 }
 
 .page-stage {
+  position: relative;
+  z-index: 1;
   display: grid;
   gap: 14px;
 }
@@ -760,8 +764,13 @@ input[type="file"] {
   position: absolute;
   top: 92px;
   right: -12px;
+  width: 86px;
+  min-height: 0;
+  pointer-events: none;
+}
+
+.reader-dock-open {
   width: 402px;
-  min-height: 72px;
 }
 
 .reader-dock-panel {
@@ -774,6 +783,7 @@ input[type="file"] {
   display: grid;
   gap: 14px;
   min-height: 280px;
+  pointer-events: auto;
 }
 
 .reader-bookmark-rail {
@@ -782,6 +792,7 @@ input[type="file"] {
   right: 0;
   display: grid;
   gap: 10px;
+  pointer-events: auto;
 }
 
 .reader-bookmark-tab {
