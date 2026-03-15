@@ -99,8 +99,16 @@ function renderHighlightedText(text: string, highlights: Highlight[]) {
 
 export function ReaderWorkspace({ itemId }: { itemId: string }) {
   const router = useRouter();
-  const { ready, state, addHighlight, addTextNote, touchItem, updateReaderPreferences, updateReadingProgress } =
-    useOpenBook();
+  const {
+    ready,
+    state,
+    addHighlight,
+    addTextNote,
+    touchItem,
+    translateToKorean,
+    updateReaderPreferences,
+    updateReadingProgress
+  } = useOpenBook();
   const [currentPageIndex, setCurrentPageIndex] = useState(1);
   const [selectedText, setSelectedText] = useState("");
   const [pendingAnchor, setPendingAnchor] = useState<Anchor | undefined>(undefined);
@@ -108,6 +116,8 @@ export function ReaderWorkspace({ itemId }: { itemId: string }) {
   const [isPageDrawerOpen, setIsPageDrawerOpen] = useState(false);
   const [resumePromptPage, setResumePromptPage] = useState<number | null>(null);
   const [resumePromptInitialized, setResumePromptInitialized] = useState(false);
+  const [translationBusy, setTranslationBusy] = useState(false);
+  const [translationError, setTranslationError] = useState("");
 
   const item = state.library.find((entry) => entry.id === itemId);
   const pages = useMemo(() => {
@@ -130,6 +140,14 @@ export function ReaderWorkspace({ itemId }: { itemId: string }) {
     );
   }, [currentPage?.blocks, item?.snapshot, state.highlights]);
 
+  const savedKoreanTranslation = useMemo(() => {
+    if (!item) {
+      return undefined;
+    }
+
+    return state.library.find((entry) => entry.translationOfItemId === item.id && entry.language === "ko");
+  }, [item, state.library]);
+
   useEffect(() => {
     if (item) {
       touchItem(item.id);
@@ -142,6 +160,8 @@ export function ReaderWorkspace({ itemId }: { itemId: string }) {
     setIsPageDrawerOpen(false);
     setResumePromptPage(null);
     setResumePromptInitialized(false);
+    setTranslationBusy(false);
+    setTranslationError("");
   }, [itemId]);
 
   useEffect(() => {
@@ -283,6 +303,27 @@ export function ReaderWorkspace({ itemId }: { itemId: string }) {
     setIsPageDrawerOpen((current) => !current);
   }
 
+  async function handleTranslateToKorean(itemToTranslate: LibraryItem) {
+    setTranslationError("");
+
+    if (savedKoreanTranslation) {
+      router.push(`/reader/${savedKoreanTranslation.id}`);
+      return;
+    }
+
+    setTranslationBusy(true);
+    try {
+      const translatedItem = await translateToKorean(itemToTranslate.id);
+      if (translatedItem) {
+        router.push(`/reader/${translatedItem.id}`);
+      }
+    } catch (error) {
+      setTranslationError(error instanceof Error ? error.message : "Could not translate this book right now.");
+    } finally {
+      setTranslationBusy(false);
+    }
+  }
+
   function renderReader(itemToRender: LibraryItem) {
     if (itemToRender.kind === "pdf_book") {
       return (
@@ -368,6 +409,20 @@ export function ReaderWorkspace({ itemId }: { itemId: string }) {
           </div>
           <div className="reader-toolbar-actions">
             <div className="card-actions">
+              {itemToRender.snapshot.language.startsWith("en") && !itemToRender.translationOfItemId ? (
+                <button
+                  className={savedKoreanTranslation ? "button button-ghost" : "button button-primary"}
+                  type="button"
+                  onClick={() => handleTranslateToKorean(itemToRender)}
+                  disabled={translationBusy}
+                >
+                  {translationBusy
+                    ? "Translating…"
+                    : savedKoreanTranslation
+                      ? "Open Korean translation"
+                      : "Translate to Korean"}
+                </button>
+              ) : null}
               <button
                 className={isPageDrawerOpen ? "button button-primary" : "button button-ghost"}
                 type="button"
@@ -500,6 +555,8 @@ export function ReaderWorkspace({ itemId }: { itemId: string }) {
             ) : null}
           </div>
         </div>
+
+        {translationError ? <p className="reader-status-text">{translationError}</p> : null}
 
         {resumePromptPage ? (
           <div className="reader-modal-backdrop">

@@ -6,6 +6,7 @@ import {
   formatNow,
   getActiveApiKey,
   mergeState,
+  snippetFromText,
   upsertJob,
   type Anchor,
   type AppSettings,
@@ -67,6 +68,7 @@ interface OpenBookContextValue {
   updateTextNote: (noteId: string, updates: Partial<Pick<NoteEntry, "title" | "body" | "pageIndex">>) => void;
   saveSketchNote: (input: SaveSketchNoteInput) => void;
   askBook: (input: AskBookInput) => Promise<void>;
+  translateToKorean: (itemId: string) => Promise<LibraryItem | null>;
   updateSettings: (updates: SettingsUpdate) => void;
   updateReaderPreferences: (updates: Partial<ReaderPreferences>) => void;
   touchItem: (itemId: string) => void;
@@ -308,6 +310,67 @@ export function OpenBookProvider({ children }: { children: ReactNode }) {
             : [nextThread, ...current.chatThreads];
           return { ...current, chatThreads };
         });
+      },
+      async translateToKorean(itemId) {
+        const item = state.library.find((entry) => entry.id === itemId);
+        if (!item?.snapshot) {
+          return null;
+        }
+
+        const existingTranslation = state.library.find(
+          (entry) => entry.translationOfItemId === item.id && entry.language === "ko"
+        );
+        if (existingTranslation) {
+          return existingTranslation;
+        }
+
+        const response = await fetch("/api/translate/book", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            snapshot: item.snapshot,
+            provider: state.settings.aiProvider,
+            apiKey: getActiveApiKey(state.settings),
+            model: state.settings.aiModel,
+            targetLanguage: "ko"
+          })
+        });
+
+        const payload = (await response.json()) as {
+          translatedSnapshot?: LibraryItem["snapshot"];
+          error?: string;
+        };
+
+        if (!response.ok || !payload.translatedSnapshot) {
+          throw new Error(payload.error ?? "Translation failed");
+        }
+
+        const now = formatNow();
+        const translatedItem: LibraryItem = {
+          id: createId("item"),
+          kind: item.kind,
+          title: `${payload.translatedSnapshot.title} · 한국어`,
+          sourceUrl: item.sourceUrl,
+          description: snippetFromText(payload.translatedSnapshot.fullText, 220),
+          createdAt: now,
+          lastOpenedAt: now,
+          translationOfItemId: item.id,
+          language: "ko",
+          tags: Array.from(new Set([...item.tags, "translation", "ko"])),
+          importStatus: "ready",
+          snapshot: {
+            ...payload.translatedSnapshot,
+            docId: createId("doc"),
+            language: "ko"
+          }
+        };
+
+        setState((current) => ({
+          ...current,
+          library: [translatedItem, ...current.library]
+        }));
+
+        return translatedItem;
       },
       updateSettings(updates) {
         setState((current) => ({

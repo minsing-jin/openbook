@@ -81,6 +81,7 @@ export interface LibraryItem {
   createdAt: string;
   lastOpenedAt?: string;
   lastReadPageIndex?: number;
+  translationOfItemId?: string;
   cover?: string;
   language: string;
   tags: string[];

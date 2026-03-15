@@ -496,6 +496,11 @@ input[type="file"] {
   color: var(--muted);
 }
 
+.reader-status-text {
+  margin: 12px 0 0;
+  color: #8f3f2a;
+}
+
 .toc-panel {
   padding: 18px;
   border-radius: 22px;
