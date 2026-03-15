@@ -559,35 +559,35 @@ export function ReaderWorkspace({ itemId }: { itemId: string }) {
         {translationError ? <p className="reader-status-text">{translationError}</p> : null}
 
         {resumePromptPage ? (
-          <div className="reader-modal-backdrop">
-            <div className="reader-modal">
+          <section className="resume-banner">
+            <div>
               <p className="eyebrow">Resume reading</p>
               <h3>Open this book from page {resumePromptPage}?</h3>
               <p>You can continue from the page you last read or start again from page 1.</p>
-              <div className="card-actions">
-                <button
-                  className="button button-primary"
-                  type="button"
-                  onClick={() => {
-                    setCurrentPageIndex(resumePromptPage);
-                    setResumePromptPage(null);
-                  }}
-                >
-                  Resume from page {resumePromptPage}
-                </button>
-                <button
-                  className="button button-ghost"
-                  type="button"
-                  onClick={() => {
-                    setCurrentPageIndex(1);
-                    setResumePromptPage(null);
-                  }}
-                >
-                  Start from page 1
-                </button>
-              </div>
             </div>
-          </div>
+            <div className="card-actions">
+              <button
+                className="button button-primary"
+                type="button"
+                onClick={() => {
+                  setCurrentPageIndex(resumePromptPage);
+                  setResumePromptPage(null);
+                }}
+              >
+                Resume from page {resumePromptPage}
+              </button>
+              <button
+                className="button button-ghost"
+                type="button"
+                onClick={() => {
+                  setCurrentPageIndex(1);
+                  setResumePromptPage(null);
+                }}
+              >
+                Start from page 1
+              </button>
+            </div>
+          </section>
         ) : null}
 
         {isPageDrawerOpen ? (
