@@ -1,7 +1,7 @@
 "use client";
 
 import type { Anchor, NoteEntry, SketchStroke } from "@openbook/core";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { SketchCanvas } from "./sketch-canvas";
 import { useOpenBook } from "./openbook-provider";
 
@@ -42,12 +42,6 @@ export function ReaderDock({
     () => (chatDocId ? state.chatThreads.find((entry) => entry.docId === chatDocId) : undefined),
     [chatDocId, state.chatThreads]
   );
-
-  useEffect(() => {
-    if (pendingSelection) {
-      onActiveTabChange("text");
-    }
-  }, [onActiveTabChange, pendingSelection]);
 
   function handleCreateTextNote() {
     if (!title.trim() && !body.trim()) {
